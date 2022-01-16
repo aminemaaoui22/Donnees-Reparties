@@ -14,18 +14,18 @@ import linda.Tuple;
 /** Shared memory implementation of Linda. */
 public class CentralizedLinda implements Linda {
 	
-	private static List<Tuple> tuples = new ArrayList<Tuple>();
+	private static List<Tuple> tuples;
 	
-	private static List<Event> readE = new ArrayList<Event>(); 
-	private static List<Event> takeE = new ArrayList<Event>();
+	private static List<Event> readE; 
+	private static List<Event> takeE;
 	
-	ReentrantLock moniteur = new java.util.concurrent.locks.ReentrantLock();
-	
-	Condition condition = moniteur.newCondition();
 	
     public CentralizedLinda() {
     	
     	// TO BE COMPLETED
+    	tuples = new ArrayList<Tuple>();
+    	readE = new ArrayList<Event>();
+    	takeE = new ArrayList<Event>();
     }
 
     @Override
@@ -36,43 +36,50 @@ public class CentralizedLinda implements Linda {
 	
 	// A compléter: take et read sont bloquantes
 
-	@Override
-	// on renvoie le 1er tuple correspondant au motif
+	@Override	
 	public Tuple take(Tuple template) {
-		moniteur.lock();
-		boolean find = false;
-		int i = 0;
-		while(!find && i< tuples.size()) {
-			if (tuples.get(i).matches(template)) {
-				Tuple elt = tuples.get(i);
-				tuples.remove(i);
+		Tuple t = tryTake(template);
+		if (t != null) {
+			//si on a un tuple correspondant au motif, on le retourne
+			// il est déjà retiré de l'espace des tuples via tryTake
+			return t;
+		} else {
+			ReentrantLock moniteur = new ReentrantLock();
+			Condition condition = moniteur.newCondition();
+			RTCallback callback = new RTCallback(moniteur, condition);
+			eventRegister(eventMode.READ, eventTiming.FUTURE, template, callback);
+			try {
+				moniteur.lock();
+				condition.await();
 				moniteur.unlock();
-				return elt;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			i++;
+			return callback.retourResultat();
 		}
-		// Sortie du while sans return = aucun tuple ne correspond
-		moniteur.unlock();
-		return null;
 	}
-
+	
 	@Override
 	public Tuple read(Tuple template) {
-		moniteur.lock();
-		boolean find = false;
-		int i = 0;
-		while(!find && i< tuples.size()) {
-			if (tuples.get(i).matches(template)) {
+		Tuple t = tryRead(template);
+		if (t != null) {
+			return t;
+		} else {
+			ReentrantLock moniteur = new ReentrantLock();
+			Condition condition = moniteur.newCondition();
+			RTCallback callback = new RTCallback(moniteur, condition);
+			eventRegister(eventMode.READ, eventTiming.FUTURE, template, callback);
+			try {
+				moniteur.lock();
+				condition.await();
 				moniteur.unlock();
-				return tuples.get(i);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			
-			i++;
+			return callback.retourResultat();
 		}
-		// Sortie du while sans return = aucun tuple ne correspond
-		moniteur.unlock();
-		return null;
 	}
 
 	@Override
@@ -140,19 +147,24 @@ public class CentralizedLinda implements Linda {
 		
 		if (timing == eventTiming.IMMEDIATE) {
 				if (mode == eventMode.READ) {
-					Tuple t = read(template);
+					// Read, on chercher si le tuple appartient à l'espace.
+					// Sinon, on l'ajoute aux processus en attente.
+					// On utilise tryRead car Read est bloquante.
+					Tuple t = tryRead(template);
 					if (t != null) 
 						callback.call(t);
 					else 
 						readE.add(new Event(template, callback));
 				}
 				else if (mode == eventMode.TAKE) {
-					Tuple t = take(template);
+					// Take, et même raisonnement que Read.
+					Tuple t = tryTake(template);
 					if (t != null) 
 						callback.call(t);
 					else takeE.add(new Event(template, callback));
 				}
 		} else if (timing == eventTiming.FUTURE) {
+			// Si abonnement au futur, pas besoin de chercher si tuple existe
 			if (mode == eventMode.READ) {
 				readE.add(new Event(template, callback));
 			} else {
