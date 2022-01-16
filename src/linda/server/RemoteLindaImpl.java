@@ -73,13 +73,13 @@ public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda 
 	}
 
 	@Override
-	public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
+	public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback)  throws RemoteException {
 		linda.eventRegister(mode, timing, template, callback);
 
 	}
 
 	@Override
-	public void debug(String prefix) {
+	public void debug(String prefix) throws RemoteException {
 		linda.debug(prefix);
 
 	}

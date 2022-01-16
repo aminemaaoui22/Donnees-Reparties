@@ -27,8 +27,8 @@ public interface RemoteLinda extends Remote {
 	
 	
     
-    public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback);
+    public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) throws RemoteException;
     
-    public void debug(String prefix);
+    public void debug(String prefix) throws RemoteException;
 
 }

@@ -13,7 +13,7 @@ import linda.Tuple;
  * */
 public class LindaClient implements Linda {
 	
-	private static ArrayList<Tuple> tuples = new ArrayList();
+	private Linda linda;
 	
     /** Initializes the Linda implementation.
      *  @param serverURI the URI of the server, e.g. "rmi://localhost:4000/LindaServer" or "//localhost:4000/LindaServer".
@@ -35,55 +35,49 @@ public class LindaClient implements Linda {
 
 	@Override
 	public void write(Tuple t) {
-		// TODO Auto-generated method stub
+		linda.write(t);
 		
 	}
 
 	@Override
 	public Tuple take(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.take(template);
 	}
 
 	@Override
 	public Tuple read(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.read(template);
 	}
 
 	@Override
 	public Tuple tryTake(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.tryTake(template);
 	}
 
 	@Override
 	public Tuple tryRead(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.tryRead(template);
 	}
 
 	@Override
 	public Collection<Tuple> takeAll(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.takeAll(template);
 	}
 
 	@Override
 	public Collection<Tuple> readAll(Tuple template) {
-		// TODO Auto-generated method stub
-		return null;
+		return linda.readAll(template);
 	}
 
 	@Override
 	public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
-		// TODO Auto-generated method stub
+		linda.eventRegister(mode, timing, template, callback);
 		
 	}
 
 	@Override
 	public void debug(String prefix) {
-		// TODO Auto-generated method stub
+		linda.debug(prefix);
 		
 	}
     
