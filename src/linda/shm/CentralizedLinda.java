@@ -165,7 +165,12 @@ public class CentralizedLinda implements Linda {
 
 	@Override
 	public void debug(String prefix) {
-		// TODO Auto-generated method stub
+		// Print the tuples in tuplespace
+		String affichage = prefix;
+		for (Tuple t: tuples) {
+			affichage += t.toString();
+		}
+		System.out.println(affichage);
 		
 	}
     
