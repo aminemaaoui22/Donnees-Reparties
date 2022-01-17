@@ -1,30 +1,44 @@
 package linda.applications;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class Premier {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
-		int i,j;
-		int borne_sup=Integer.parseInt(args[0]);
-	    boolean []tableau_premiers = new boolean [borne_sup-1];
-	    
-	    for (i=0;i<=tableau_premiers.length-1;i++) 
-	    {
-	        tableau_premiers[i]=true;
-	    }
-	    
-	    for (i=2;i<=borne_sup;i++) 
-	    {
-	    	if (tableau_premiers[i-2]==true){ 
-		        j=i+1;
-		        while (j<=borne_sup) 
-	 	        {
-			        if ((j%i)==0) tableau_premiers[j-2]=false;
-			        j++;
-		        }
-		   	    	System.out.println(i+" ");
-	    	}
-	    }
+		ExecutorService poule=Executors.newFixedThreadPool(2);
+		
+		int rest = Integer.parseInt(args[0]);
+		int debut = 1;
+		List<Future<String>> taches = new ArrayList<Future<String>>();
+		
+		while (rest > 0) {
+			if (rest >= 10) {
+				Future<String> f = poule.submit(new CalculPremier(debut, debut + 9));
+				taches.add(f);
+				debut += 10;
+				rest -= 10;
+			} else {
+				// reste < 10
+				Future<String> f = poule.submit(new CalculPremier(debut, debut + rest - 1));
+				taches.add(f);
+				rest = 0;
+			}
+		}
+		
+		// Récupération résultats
+		
+		String res = "";
+		
+		for(Future<String> j : taches) {
+			res += j.get();
+		}
+		
+		System.out.println("Les nombres premiers inférieurs à " + args[0] + " sont " + res);
 	}
 
 }
