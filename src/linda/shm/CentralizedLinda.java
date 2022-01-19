@@ -27,6 +27,15 @@ public class CentralizedLinda implements Linda {
     	readE = new ArrayList<Event>();
     	takeE = new ArrayList<Event>();
     }
+    
+    //Pour l'application de recherche dans un fichier, le manager a son espace
+    // de recherche, donc on utilise un constructeur paramétré
+	public CentralizedLinda(List<Tuple> t) {
+	    	tuples = t;
+	    	readE = new ArrayList<Event>();
+	    	takeE = new ArrayList<Event>();
+	    }
+    
 
     @Override
 	public void write(Tuple t) {
@@ -186,6 +195,5 @@ public class CentralizedLinda implements Linda {
 		
 	}
     
-    // TO BE COMPLETED
 
 }

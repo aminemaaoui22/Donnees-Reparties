@@ -92,7 +92,7 @@ public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda 
 		int port = 1099;
 			
 		try {
-			//naming service 
+			//lancer rmiregistry
 			Registry registry = LocateRegistry.createRegistry(port);
 			// Créer une instance du serveur
 			RemoteLinda obj = new RemoteLindaImpl();
