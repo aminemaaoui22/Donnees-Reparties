@@ -1,18 +1,32 @@
 package linda.search.basic;
 
 import linda.*;
+import java.io.*;
 import java.util.Arrays;
 import java.util.UUID;
+import java.net.*;
+import java.util.*;
 
-public class Searcher implements Runnable {
+public class Searcher extends Thread {
 
-    private Linda linda;
+    private Socket input;
+    private Linda linda; 
 
-    public Searcher(Linda linda) {
-        this.linda = linda;
+    public Searcher(Socket s) {
+        this.input = s;
     }
 
     public void run() {
+
+        /* Reception d'une new request */
+        System.out.println("received new request");
+        Socket output = new Socket("localhost", 8081);
+
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        bytesRead = input.getInputStream().read(buffer);
+
+
         System.out.println("Ready to do a search");
         Tuple treq = linda.read(new Tuple(Code.Request, UUID.class, String.class));
         UUID reqUUID = (UUID)treq.get(1);
@@ -27,6 +41,10 @@ public class Searcher implements Runnable {
             }
         }
         linda.write(new Tuple(Code.Searcher, "done", reqUUID));
+
+
+        output.getOutputStream().write(buffer, 0, bytesRead);
+        System.out.println("end of thread");
     }
     
     /*****************************************************************/
@@ -60,6 +78,17 @@ public class Searcher implements Runnable {
 
     private static int min(int... numbers) {
         return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
+    }
+
+
+    public static void main(String args[]) {
+        try {
+            ServerSocket ss = new ServerSocket(8080);
+            while (true) {
+                Thread t = new Searcher(ss.accept());
+                t.start();
+            }
+        } catch (Exception e) {e.printStackTrace();}
     }
 
 }

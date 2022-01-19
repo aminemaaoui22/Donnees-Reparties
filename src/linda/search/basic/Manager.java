@@ -7,10 +7,15 @@ import java.util.stream.Stream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import linda.*;
+import java.util.*;
 
 public class Manager implements Runnable {
 
     private Linda linda;
+
+    private Socket s;
+
+    public Manager (Socket s, Linda linda, String pathname, String search) { this.s = s; }
 
     private UUID reqUUID;
     private String pathname;
@@ -18,10 +23,11 @@ public class Manager implements Runnable {
     private int bestvalue = Integer.MAX_VALUE; // lower is better
     private String bestresult;
 
-    public Manager(Linda linda, String pathname, String search) {
+    public Manager(Socket s, Linda linda, String pathname, String search) {
         this.linda = linda;
         this.pathname = pathname;
         this.search = search;
+        this.s = s;
     }
 
     private void addSearch(String search) {
@@ -58,6 +64,11 @@ public class Manager implements Runnable {
             linda.eventRegister(Linda.eventMode.TAKE, Linda.eventTiming.IMMEDIATE, new Tuple(Code.Result, reqUUID, String.class, Integer.class), this);
         }
     }
+
+    public static void main (String[] args) throws IOException {
+		ServerSocket s = new ServerSocket(Integer.parseInt(args[0]));
+		while (true) { new Thread(new Manager(s.accept())).start(); }
+	}
 
     public void run() {
         this.loadData(pathname);
